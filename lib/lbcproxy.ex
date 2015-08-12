@@ -29,20 +29,41 @@ defmodule Lbcproxy do
             :rhone_alpes, :guadeloupe, :martinique, :guyane, :reunion]
 
   def search(terms, region \\ :all, category \\ :annonces) when category in @categories do
+    url = make_url(terms, region, category)
+
+    Stream.resource(fn -> 1 end,
+                    fn page ->
+                      case get(make_url(url, page)) do
+                        [] -> {:halt, page}
+                        data when is_list(data) -> {data, page+1}
+                        _ -> {:halt, page}
+                      end
+                    end,
+                    fn _page -> end)
+  end
+
+  defp get(url) do
+    case HTTPoison.get(url) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        Lbcparser.parse(body)
+      {:ok, %HTTPoison.Response{status_code: 404}} ->
+        IO.puts "Not found :("
+        []
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        IO.inspect reason
+        []
+    end
+  end
+
+  defp make_url(terms, region, category) do
     query = URI.encode_query(%{"q" => terms})
     str_category = to_string(category)
     str_region = to_string(region)
     url = "#{@base_site}/#{str_category}/offres/#{str_region}/"
-    full_url = "#{url}?#{query}"
-
-    case HTTPoison.get(full_url) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        IO.inspect Lbcparser.parse(body)
-      {:ok, %HTTPoison.Response{status_code: 404}} ->
-        IO.puts "Not found :("
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        IO.inspect reason
-    end
+    "#{url}?#{query}"
+  end
+  defp make_url(url, page) do
+    "#{url}&o=#{page}"
   end
 
 end

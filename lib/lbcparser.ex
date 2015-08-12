@@ -29,8 +29,7 @@ defmodule Lbcparser do
     category = List.first(F.find(elem, ".category")) |> F.text |> String.strip
     placement = List.first(F.find(elem, ".placement")) |> F.text
                 |> String.split([" ", "\t", "\n", "/"], trim: true)
-    price = List.first(F.find(elem, ".price"))
-            |> F.text |> String.strip #|> extract_price
+    price = extract_price(List.first(F.find(elem, ".price")))
 
     %{ :link => link, :title => title, :date => date, :category => category,
       :placement => placement, :price => price, :time => time, :id => id }
@@ -40,10 +39,11 @@ defmodule Lbcparser do
     [_date, _time] = Enum.map(raw_datetime, fn x -> F.text(x) |> String.strip end)
   end
 
+  defp extract_price(nil) do
+    ""
+  end
   defp extract_price(raw_price) do
-    <<128, 194, 160, invprice :: binary>> = String.reverse(raw_price)
-    {p, _} = String.replace(invprice, " ", "") |> String.reverse |> Integer.parse
-    p
+    raw_price |> F.text |> String.strip
   end
 
 end
