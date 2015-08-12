@@ -30,9 +30,12 @@ defmodule Lbcparser do
     placement = List.first(F.find(elem, ".placement")) |> F.text
                 |> String.split([" ", "\t", "\n", "/"], trim: true)
     price = extract_price(List.first(F.find(elem, ".price")))
+    picture = extract_picture(F.find(elem, ".image .image-and-nb"))
 
     %{ :link => link, :title => title, :date => date, :category => category,
-      :placement => placement, :price => price, :time => time, :id => id }
+      :placement => placement, :price => price, :time => time, :id => id,
+      :picture => picture
+    }
   end
 
   defp extract_datetime(raw_datetime) do
@@ -44,6 +47,13 @@ defmodule Lbcparser do
   end
   defp extract_price(raw_price) do
     raw_price |> F.text |> String.strip
+  end
+
+  defp extract_picture([]) do
+    ""
+  end
+  defp extract_picture(raw_picture) do
+    raw_picture |> Floki.attribute("img", "src") |> List.first
   end
 
 end

@@ -9,7 +9,8 @@ defmodule LbcparserTest do
       link: "http://www.leboncoin.fr/voitures/839541197.htm?ca=16_s",
       placement: [<<70, 114, 233, 106, 97, 105, 114, 111, 108, 108, 101, 115>>,
         "Tarn"], price: <<49, 57, 32, 53, 48, 48, 194, 160, 128>>, time: "08:38",
-      title: "Renault Captur Intens 1.5 DCI 110 CV"}
+      title: "Renault Captur Intens 1.5 DCI 110 CV",
+      picture: "voitures_renault_laguna_3_midi_py_files/51baad98c41aad89f6d74ac5b5acd121fa4c9907.jpg"}
 
     l = Lbcparser.parse @laguna_p1
     assert length(l) == 9
