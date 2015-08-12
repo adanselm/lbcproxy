@@ -28,6 +28,14 @@ defmodule Lbcproxy do
             :pays_de_la_loire, :picardie, :poitou_charentes, :provence_alpes_cote_d_azur,
             :rhone_alpes, :guadeloupe, :martinique, :guyane, :reunion]
 
+  def all_categories do
+    @categories
+  end
+
+  def all_regions do
+    @regions
+  end
+
   def search(terms, region \\ :all, category \\ :annonces) when category in @categories do
     url = make_url(terms, region, category)
 
@@ -56,14 +64,21 @@ defmodule Lbcproxy do
   end
 
   defp make_url(terms, region, category) do
-    query = URI.encode_query(%{"q" => terms})
     str_category = to_string(category)
-    str_region = to_string(region)
+    str_region = make_region(region)
+    query = URI.encode_query(%{"q" => terms})
     url = "#{@base_site}/#{str_category}/offres/#{str_region}/"
     "#{url}?#{query}"
   end
   defp make_url(url, page) do
     "#{url}&o=#{page}"
+  end
+
+  defp make_region(:all) do
+    "ile_de_france/occasions"
+  end
+  defp make_region(region) do
+    to_string(region)
   end
 
 end
