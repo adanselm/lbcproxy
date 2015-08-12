@@ -25,10 +25,10 @@ defmodule Lbcparser do
     link = List.first(F.attribute(elem, "a", "href"))
     [id] = Regex.run(~r|/([0-9]+)\.htm|, link, capture: :all_but_first)
     [date, time] = extract_datetime( tl(F.find(elem, ".date div")) )
-    title = List.first(F.find(elem, ".title")) |> F.text |> String.strip
-    category = List.first(F.find(elem, ".category")) |> F.text |> String.strip
+    title = List.first(F.find(elem, ".title")) |> F.text |> clean_string
+    category = List.first(F.find(elem, ".category")) |> F.text |> clean_string
     placement = List.first(F.find(elem, ".placement")) |> F.text
-                |> String.split([" ", "\t", "\n", "/"], trim: true)
+                |> String.split(["/"], trim: true) |> clean_string
     price = extract_price(List.first(F.find(elem, ".price")))
     picture = extract_picture(F.find(elem, ".image .image-and-nb"))
 
@@ -39,14 +39,14 @@ defmodule Lbcparser do
   end
 
   defp extract_datetime(raw_datetime) do
-    [_date, _time] = Enum.map(raw_datetime, fn x -> F.text(x) |> String.strip end)
+    Enum.map(raw_datetime, fn x -> F.text(x) |> clean_string end)
   end
 
   defp extract_price(nil) do
     ""
   end
   defp extract_price(raw_price) do
-    raw_price |> F.text |> String.strip
+    raw_price |> F.text |> clean_string
   end
 
   defp extract_picture([]) do
@@ -54,6 +54,20 @@ defmodule Lbcparser do
   end
   defp extract_picture(raw_picture) do
     raw_picture |> Floki.attribute("img", "src") |> List.first
+  end
+
+  defp clean_string(list) when is_list(list) do
+    Enum.map(list, fn x -> clean_string(x) end)
+  end
+  defp clean_string(str) do
+    unless String.printable?(str) do
+      {:ok, str} = Codepagex.to_string(:iso_8859_15, str)
+    end
+
+    str
+    |> String.strip
+    |> String.split([" ", "\t", "\n"], trim: true)
+    |> Enum.join(" ")
   end
 
 end
