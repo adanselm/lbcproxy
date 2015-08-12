@@ -1,4 +1,5 @@
-%{"floki": {:hex, :floki, "0.3.2"},
+%{"codepagex": {:git, "git://github.com/tallakt/codepagex.git", "bcb14b90082a2d294ba2e4386a43151a434bca78", []},
+  "floki": {:hex, :floki, "0.3.2"},
   "hackney": {:hex, :hackney, "1.3.0"},
   "httpoison": {:hex, :httpoison, "0.7.1"},
   "idna": {:hex, :idna, "1.0.2"},

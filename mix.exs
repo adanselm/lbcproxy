@@ -7,7 +7,14 @@ defmodule Lbcproxy.Mixfile do
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     escript: escript,
      deps: deps]
+  end
+
+  defp escript do
+    [main_module: LbcproxyCli,
+     embed_elixir: true,
+     name: "lbcproxy_cli"]
   end
 
   # Configuration for the OTP application
@@ -29,7 +36,8 @@ defmodule Lbcproxy.Mixfile do
   defp deps do
     [
       {:floki, "~> 0.3"},
-      {:httpoison, "~> 0.7"}
+      {:httpoison, "~> 0.7"},
+      {:codepagex, github: "tallakt/codepagex"}
     ]
   end
 end
