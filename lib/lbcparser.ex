@@ -3,15 +3,7 @@ defmodule Lbcparser do
   alias Floki, as: F
 
   def parse(html) do
-    filter = fn (x, acc) ->
-      case F.find(x, ".lbc") do
-        [] -> acc
-        _  -> [x | acc]
-      end
-    end
-
-    F.find(html, ".list-lbc a")
-    |> List.foldl([], filter)
+    F.find(html, ".tabsContent a")
     |> extract
   end
 
@@ -24,13 +16,13 @@ defmodule Lbcparser do
   defp extract(elem) do
     link = List.first(F.attribute(elem, "a", "href"))
     [id] = Regex.run(~r|/([0-9]+)\.htm|, link, capture: :all_but_first)
-    [date, time] = extract_datetime( tl(F.find(elem, ".date div")) )
-    title = List.first(F.find(elem, ".title")) |> F.text |> clean_string
-    category = List.first(F.find(elem, ".category")) |> F.text |> clean_string
-    placement = List.first(F.find(elem, ".placement")) |> F.text
+    [date, time] = extract_datetime( F.find(elem, ".item_infos aside .item_supp") )
+    title = List.first(F.find(elem, ".item_title")) |> F.text |> clean_string
+    category = List.first(F.find(elem, ".item_supp")) |> F.text |> clean_string
+    placement = Enum.at(F.find(elem, ".item_supp"), 1) |> F.text
                 |> String.split(["/"], trim: true) |> clean_string
-    price = extract_price(List.first(F.find(elem, ".price")))
-    picture = extract_picture(F.find(elem, ".image .image-and-nb"))
+    price = extract_price(List.first(F.find(elem, ".item_price")))
+    picture = extract_picture(F.find(elem, ".item_imagePic"))
 
     %{ :link => link, :title => title, :date => date, :category => category,
       :placement => placement, :price => price, :time => time, :id => id,
@@ -39,7 +31,7 @@ defmodule Lbcparser do
   end
 
   defp extract_datetime(raw_datetime) do
-    Enum.map(raw_datetime, fn x -> F.text(x) |> clean_string end)
+    List.first(raw_datetime) |> F.text |> clean_string |> String.split(",", trim: true)
   end
 
   defp extract_price(nil) do
@@ -53,7 +45,7 @@ defmodule Lbcparser do
     ""
   end
   defp extract_picture(raw_picture) do
-    raw_picture |> Floki.attribute("img", "src") |> List.first
+    raw_picture |> Floki.attribute("span", "data-imgsrc") |> List.first
   end
 
   defp clean_string(list) when is_list(list) do
